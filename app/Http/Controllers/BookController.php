@@ -103,7 +103,7 @@ class BookController extends Controller
             }
         }
         $book->save();
-        return (new GeneralResponseCollection($book, ['Success create book'], true))
+        return (new GeneralResponseCollection($book, ['Success update book'], true))
             ->response()->setStatusCode(200);
     }
 

@@ -16,7 +16,7 @@ use App\Http\Controllers;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->redirectToRoute('buku.index');
 });
 
 Auth::routes();

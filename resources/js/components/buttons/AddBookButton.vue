@@ -8,7 +8,7 @@ export default {
     name: "AddBookButton",
     methods: {
         addBook() {
-            EventBus.$emit('onShowModal', {type: 'add', data: null})
+            EventBus.$emit('onShowModal', {type: 'add', data: {judul: '', stok: 0}})
         }
     }
 }

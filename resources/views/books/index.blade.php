@@ -18,21 +18,21 @@
                         <table id="listBookDataTable" class="table table-striped" style="width:100%">
                             <thead>
                             <tr>
+                                <th>Gambar</th>
                                 <th>Judul</th>
                                 <th>Stok</th>
-                                <th>Gambar</th>
                                 <th>Action</th>
                             </tr>
                             </thead>
                             <tbody>
                             @foreach($books as $book)
                                 <tr>
-                                    <td>{{$book->judul}}</td>
-                                    <td>{{$book->stok}}</td>
                                     <td>
                                         <img src="{{$book->gambar ? '/storage/'.$book->gambar : '/images/empty.jpg'}}"
                                              alt="book-image" class="img-thumbnail" style="width: 100px"/>
                                     </td>
+                                    <td>{{$book->judul}}</td>
+                                    <td>{{$book->stok}}</td>
                                     <td>
                                         <div class="d-flex">
                                             <edit-book-button :origin="{{$book}}"></edit-book-button>
@@ -51,9 +51,9 @@
                             </tbody>
                             <tfoot>
                             <tr>
+                                <th>Gambar</th>
                                 <th>Judul</th>
                                 <th>Stok</th>
-                                <th>Gambar</th>
                                 <th>Action</th>
                             </tr>
                             </tfoot>

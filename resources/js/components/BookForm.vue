@@ -10,8 +10,12 @@
                 </div>
                 <form @submit.prevent="onSave" @keydown="form.onKeydown($event)" id="bookInputForm">
                     <div class="modal-body">
-                        <AlertError :form="form" />
-                        <AlertSuccess :form="form" message="Your changes have been saved!" />
+                        <AlertError
+                            :form="form"
+                            :message="type === 'edit' ? 'Data gagal diubah' : 'Data gagal ditambahkan'" />
+                        <AlertSuccess
+                            :form="form"
+                            :message="type === 'edit' ? 'Data berhasil diubah' : 'Data berhasil ditambahkan'" />
                         <div class="mb-3">
                             <label class="form-label">Judul Buku<span class="text-danger">*</span></label>
                             <input v-model="form.judul" type="text" name="judul" class="form-control">
@@ -24,6 +28,10 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Gambar<span class="text-danger">*</span></label>
+                            <div v-if="origin && origin.gambar">
+                                <img :src="`/storage/${origin.gambar}`" alt="book-image" class="img-thumbnail"
+                                     style="width: 100px"/>
+                            </div>
                             <input type="file" name="gambar" class="form-control" accept="image/jpeg,image/png"
                                    @change="handleFile">
                             <HasError :form="form" field="gambar" />
@@ -55,18 +63,30 @@ export default {
         origin: null,
         form: new Form({
             judul: '',
-            stok: '',
-            gambar: null
+            stok: ''
         })
     }),
     methods: {
         handleFile (event) {
             this.form.gambar = event.target.files[0]
         },
+        playSound (sound) {
+            if(sound) {
+                let audio = new Audio(sound);
+                audio.play();
+            }
+        },
         async onSave () {
-            const response = await this.form.post(this.type === 'edit' ? `buku/${this.origin.id}` : 'buku')
-            if (response.data.action) {
-                window.location.reload()
+            try {
+                const response = await this.form.post(this.type === 'edit' ? `buku/${this.origin.id}` : 'buku')
+                if (response.data.action) {
+                    this.playSound('/sounds/SuccessDoorBell.mp3')
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 1000)
+                }
+            } catch (e) {
+                this.playSound('/sounds/ErrorAlertSound.mp3')
             }
         }
     },
@@ -74,12 +94,10 @@ export default {
         EventBus.$on('onShowModal', (val) => {
             this.type = val.type
             this.origin = val.data
-            if (val.type === 'edit') {
-                this.form.judul = val.data.judul
-                this.form.stok = val.data.stok
-                this.form.gambar = val.data.gambar
-                this.form._method = "PUT"
-            }
+            this.form.judul = val.data.judul
+            this.form.stok = val.data.stok
+            if (val.type === 'edit') this.form._method = "PUT"
+            else delete this.form._method
             $("#bookFormModal").modal('show')
         })
     }
