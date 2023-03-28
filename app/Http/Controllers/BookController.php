@@ -2,11 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\GeneralResponseCollection;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class BookController extends Controller
 {
+    public static function rules(Request $request = null)
+    {
+        return [
+            'store' => [
+                'judul' => 'required|string|max:255',
+                'stok' => 'required|numeric',
+                'gambar' => 'mimes:jpeg,jpg,png|max:2000|nullable',
+            ],
+            'update' => [
+                'judul' => 'string|max:255',
+                'stok' => 'numeric',
+                'gambar' => 'mimes:jpeg,jpg,png|max:2000|nullable',
+            ]
+        ];
+    }
     /**
      * Display a listing of the resource.
      *
@@ -28,15 +45,24 @@ class BookController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate(self::rules($request)['store']);
+        $book = new Book;
+        foreach (self::rules($request)['store'] as $key => $value) {
+            if (Str::contains($value, [ 'file', 'image', 'mimetypes', 'mimes' ])) {
+                if ($request->hasFile($key)) {
+                    $book->{$key} = $request->file($key)->store('books', 'public');
+                } elseif ($request->exists($key)) {
+                    $book->{$key} = $request->{$key};
+                }
+            } elseif ($request->exists($key)) {
+                $book->{$key} = $request->{$key};
+            }
+        }
+        $book->save();
+        return (new GeneralResponseCollection($book, ['Success create book'], true))
+            ->response()->setStatusCode(201);
     }
 
     /**
@@ -61,26 +87,30 @@ class BookController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Book  $book
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Book $book)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate(self::rules($request)['update']);
+        $book = Book::query()->findOrFail($id);
+        foreach (self::rules($request)['update'] as $key => $value) {
+            if (Str::contains($value, [ 'file', 'image', 'mimetypes', 'mimes' ])) {
+                if ($request->hasFile($key)) {
+                    $book->{$key} = $request->file($key)->store('books', 'public');
+                } elseif ($request->exists($key)) {
+                    $book->{$key} = $request->{$key};
+                }
+            } elseif ($request->exists($key)) {
+                $book->{$key} = $request->{$key};
+            }
+        }
+        $book->save();
+        return (new GeneralResponseCollection($book, ['Success create book'], true))
+            ->response()->setStatusCode(200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Book  $book
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Book $book)
+    public function destroy($id)
     {
-        //
+        $book = Book::query()->findOrFail($id);
+        $book->delete();
+        return response()->redirectToRoute('buku.index');
     }
 }

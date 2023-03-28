@@ -20,4 +20,7 @@
         </div>
     </div>
 </div>
+<add-book-button></add-book-button>
+<example-component></example-component>
+<book-form></book-form>
 @endsection
